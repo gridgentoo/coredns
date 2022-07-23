@@ -71,6 +71,9 @@ RulesCheckLoop:
 			{
 				m := new(dns.Msg)
 				m.SetRcode(r, dns.RcodeRefused)
+				m = m.SetEdns0(4096, true)
+				ede := dns.EDNS0_EDE{InfoCode: dns.ExtendedErrorCodeBlocked}
+				m.IsEdns0().Option = append(m.IsEdns0().Option, &ede)
 				w.WriteMsg(m)
 				RequestBlockCount.WithLabelValues(metrics.WithServer(ctx), zone).Inc()
 				return dns.RcodeSuccess, nil
@@ -83,6 +86,9 @@ RulesCheckLoop:
 			{
 				m := new(dns.Msg)
 				m.SetRcode(r, dns.RcodeSuccess)
+				m = m.SetEdns0(4096, true)
+				ede := dns.EDNS0_EDE{InfoCode: dns.ExtendedErrorCodeFiltered}
+				m.IsEdns0().Option = append(m.IsEdns0().Option, &ede)
 				w.WriteMsg(m)
 				RequestFilterCount.WithLabelValues(metrics.WithServer(ctx), zone).Inc()
 				return dns.RcodeSuccess, nil
